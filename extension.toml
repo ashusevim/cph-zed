@@ -1,0 +1,23 @@
+id = "cph"
+name = "Competitive Programming Helper"
+version = "0.1.0"
+schema_version = 1
+authors = ["wanony"]
+description = "Receives problems from competitive-companion browser extension and creates solution templates with test cases"
+repository = "https://github.com/wanony/cph-zed"
+
+[slash_commands.cph-fetch]
+description = "Fetch a competitive programming problem from JSON"
+requires_argument = true
+
+[slash_commands.cph-run]
+description = "Run the solution with a specific test case"
+requires_argument = false
+
+[slash_commands.cph-test]
+description = "Test solution against all test cases and compare outputs"
+requires_argument = false
+
+[slash_commands.cph-server]
+description = "Control the companion HTTP server for automatic problem fetching"
+requires_argument = false
