@@ -4,7 +4,7 @@ version = "0.1.0"
 schema_version = 1
 authors = ["wanony"]
 description = "Receives problems from competitive-companion browser extension and creates solution templates with test cases"
-repository = "https://github.com/wanony/cph-zed"
+repository = "https://github.com/ashusevim/cph-zed"
 
 [slash_commands.cph-fetch]
 description = "Fetch a competitive programming problem from JSON"
