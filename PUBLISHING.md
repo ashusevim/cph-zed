@@ -52,15 +52,14 @@ Debug output from the extension goes to Zed's log (`zed: open log`). For live
 zeditor --foreground
 ```
 
-## Optional: install the companion server
+## Optional: how the original works
 
-The slash commands require pasting JSON by hand. For automatic fetching, run the
-separate companion server, which receives problems over HTTP and writes files
-directly into your project — no sandbox involved.
+The upstream [agrawal-d/cph][orig] is a VS Code extension. It listens on port 27121
+inside the VS Code extension host and writes files directly into your workspace, which
+is why it can fetch problems with one click.
 
-```bash
-cargo install cph-server
-cph-server --port 10045 --dir ./problems
-```
+A Zed extension cannot replicate that: the WASM sandbox has no socket API, and only the
+extension's own work directory is writable. Use `/cph-fetch` with pasted JSON instead.
 
+[orig]: https://github.com/agrawal-d/cph
 [prereq]: https://zed.dev/docs/extensions/publishing/prerequisites

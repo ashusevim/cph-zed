@@ -23,10 +23,7 @@ Example:
 
 Note: Zed's extension sandbox cannot write into your worktree, so the files are
 written to the extension work directory and you get a `cp -r` command to move
-them. For fully automatic fetching, run the companion server instead:
-
-  cargo install cph-server
-  cph-server --port 10045 --dir ./problems";
+them.";
 
 /// Languages accepted by `/cph-fetch`.
 const LANGUAGES: [&str; 4] = ["cpp", "python", "rust", "java"];
@@ -249,34 +246,25 @@ impl CphExtension {
         })
     }
 
-    /// Handle /cph-server command - info about the companion server
-    fn handle_server_command(&self, args: Vec<String>) -> Result<SlashCommandOutput, String> {
-        let subcommand = args.first().map(|s| s.as_str()).unwrap_or("help");
-
-        let text = match subcommand {
-            "start" => "🚀 Starting CPH Server...\n\n\
-                 To receive problems automatically from competitive-companion:\n\n\
-                 1. Install the companion server (one time):\n\
-                    ```bash\n\
-                    cargo install cph-server\n\
-                    ```\n\n\
-                 2. Run the server:\n\
-                    ```bash\n\
-                    cph-server --port 10045 --dir ./problems\n\
-                    ```\n\n\
-                 3. Click competitive-companion icon on any problem page\n\n\
-                 The server will create files automatically!"
-                .to_string(),
-            "stop" => "🛑 Stopping CPH Server...\n\n\
-                       Press Ctrl+C in the terminal running cph-server."
-                .to_string(),
-            _ => "📡 CPH Server Commands:\n\n\
-                 • /cph-server start - How to start the problem receiver\n\
-                 • /cph-server stop  - How to stop the server\n\n\
-                 The server listens for problems from competitive-companion\n\
-                 and creates solution files automatically."
-                .to_string(),
-        };
+    /// Handle /cph-server command - explains why automatic fetching needs a
+    /// native server, and what the real CPH project does.
+    fn handle_server_command(&self, _args: Vec<String>) -> Result<SlashCommandOutput, String> {
+        let text = "📡 Automatic fetching is not available in this extension.\n\n\
+                    The original CPH (github.com/agrawal-d/cph) is a VS Code extension. \
+                    It runs an HTTP listener on port 27121 inside the VS Code extension \
+                    host and writes files straight into your workspace.\n\n\
+                    A Zed extension cannot do either half of that:\n\n\
+                    1. Its WASM sandbox has no socket API, so it cannot listen for \
+                    competitive-companion's POST.\n\
+                    2. Only the extension's own work directory is writable, so it \
+                    cannot write into your project even if it had the data.\n\n\
+                    Use /cph-fetch and paste the JSON instead. It writes the files to \
+                    the extension work directory and prints a `cp -r` command to move \
+                    them into your project.\n\n\
+                    Making this fully automatic would require a separate native server \
+                    binary that listens on a port and writes to disk — a new project, \
+                    not a Zed extension."
+            .to_string();
 
         Ok(SlashCommandOutput {
             text: text.clone(),
@@ -339,7 +327,25 @@ mod tests {
     fn usage_is_shown_for_empty_input() {
         let err = CphExtension.handle_fetch_command(vec![], None).unwrap_err();
         assert!(err.contains("/cph-fetch"));
-        assert!(err.contains("cp -r") || err.contains("cargo install cph-server"));
+    }
+
+    #[test]
+    fn no_command_invents_an_installable_binary() {
+        // `cph-server` was documented as `cargo install cph-server`, but no such
+        // crate exists on crates.io. Nothing may point users at it again.
+        let server = CphExtension.handle_server_command(vec![]).unwrap();
+        for cmd in ["/cph-fetch", "/cph-run", "/cph-test"] {
+            let out = match cmd {
+                "/cph-fetch" => CphExtension.handle_fetch_command(vec![], None).unwrap_err(),
+                "/cph-run" => CphExtension.handle_run_command(vec![], None).unwrap().text,
+                _ => CphExtension.handle_test_command(vec![], None).unwrap().text,
+            };
+            assert!(
+                !out.contains("cargo install cph-server"),
+                "{cmd} still tells users to install the nonexistent cph-server crate"
+            );
+        }
+        assert!(!server.text.contains("cargo install cph-server"));
     }
 
     #[test]

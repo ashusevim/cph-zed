@@ -55,26 +55,12 @@ rustup target add wasm32-wasip2
 
 ## Quick Start
 
-### Option A: automatic, via the companion server (recommended)
+### Fetch a problem
 
-The server writes files straight into your project over HTTP, so there is no sandbox
-in the way.
+Install [competitive-companion][cc] in your browser, navigate to any problem on
+Codeforces, AtCoder, etc., and click the extension icon. It shows you the problem JSON.
 
-```bash
-# 1. Install the companion server
-cargo install cph-server
-
-# 2. Start it
-cph-server --port 10045 --dir ./problems
-```
-
-Then install [competitive-companion][cc] in your browser, navigate to any problem on
-Codeforces, AtCoder, etc., and click the extension icon. Solution files appear
-automatically.
-
-### Option B: manual, via `/cph-fetch`
-
-Copy the JSON that competitive-companion shows you and run:
+Copy that JSON and run:
 
 ```
 /cph-fetch {"name": "A. Two Sum", ...}
@@ -84,7 +70,22 @@ Zed's extension sandbox only permits writes to the extension's own work director
 the files are written there and you get a `cp -r` command to move them into your
 project. Run it in your project terminal.
 
+### Why not automatic, like the VS Code original?
+
+The original [agrawal-d/cph][orig] runs an HTTP listener on port 27121 inside the VS
+Code extension host and writes files straight into your workspace. A Zed extension can
+do neither half:
+
+1. Its WASM sandbox exposes no socket API, so it cannot accept competitive-companion's
+   POST.
+2. Only the extension's own work directory is writable, so it cannot write into your
+   project even if it had the data.
+
+Closing that gap needs a separate native server binary — a different project, not a
+Zed extension.
+
 [cc]: https://github.com/jmerle/competitive-companion
+[orig]: https://github.com/agrawal-d/cph
 
 ## Slash Commands
 
@@ -93,7 +94,7 @@ project. Run it in your project terminal.
 | `/cph-fetch [lang] <json>` | Generate solution template, metadata and test files from pasted JSON. `lang` is `cpp` (default), `python`, `rust`, or `java`. |
 | `/cph-run [n]` | Print the command to run test case `n`, or all of them |
 | `/cph-test` | Print the command to test against all cases and count passes/failures |
-| `/cph-server` | Instructions for the companion server |
+| `/cph-server` | Explain why automatic fetching is unavailable in Zed |
 
 ## Generated File Structure
 
@@ -137,25 +138,11 @@ int main() {
 
 Templates are also available for **Python**, **Rust**, and **Java**.
 
-## Server CLI Options
-
-```
-cph-server [OPTIONS]
-
-Options:
-  -p, --port <PORT>        Port to listen on [default: 10045]
-  -d, --dir <DIR>          Directory for problem files [default: .]
-  -l, --language <LANG>    Template language: cpp, python, rust, java [default: cpp]
-  -n, --notify             Enable desktop notifications [default: true]
-  -h, --help               Print help
-  -V, --version            Print version
-```
-
 ## Requirements
 
 - **Zed** editor (latest version recommended)
 - **competitive-companion** browser extension
-- **Rust** (for building the companion server)
+- **Rust** with the `wasm32-wasip2` target (Zed compiles the extension for you)
 
 ## Contributing
 
@@ -170,8 +157,7 @@ Contributions are welcome! Please feel free to submit issues or pull requests.
 ## Related Projects
 
 - [competitive-companion](https://github.com/jmerle/competitive-companion) - Browser extension for parsing problems
-- [cph-server](https://crates.io/crates/cph-server) - Companion HTTP server (published separately)
-- [CPH for VS Code](https://marketplace.visualstudio.com/items?itemName=DivyanshuAgrawal.competitive-programming-helper) - Similar extension for VS Code
+- [CPH for VS Code](https://github.com/agrawal-d/cph) - The original this is modelled on. A VS Code extension, so it can listen on a socket and write into your workspace directly; a Zed extension cannot.
 
 ## License
 
