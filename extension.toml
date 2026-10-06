@@ -7,17 +7,17 @@ description = "Receives problems from competitive-companion browser extension an
 repository = "https://github.com/ashusevim/cph-zed"
 
 [slash_commands.cph-fetch]
-description = "Fetch a competitive programming problem from JSON"
+description = "Fetch a competitive programming problem from competitive-companion JSON"
 requires_argument = true
 
 [slash_commands.cph-run]
-description = "Run the solution with a specific test case"
+description = "Print the command to run one test case (or all of them)"
 requires_argument = false
 
 [slash_commands.cph-test]
-description = "Test solution against all test cases and compare outputs"
+description = "Print the command to test the solution against all cases"
 requires_argument = false
 
 [slash_commands.cph-server]
-description = "Control the companion HTTP server for automatic problem fetching"
+description = "Instructions for the companion server, which fetches problems automatically"
 requires_argument = false

@@ -32,58 +32,68 @@ Works with all websites supported by competitive-companion, including:
 
 ## Installation
 
-### From Zed Extensions (Recommended)
-
-1. Open Zed
-2. Open the Extensions panel (`Cmd+Shift+X` on macOS, `Ctrl+Shift+X` on Linux)
-3. Search for "**Competitive Programming Helper**" or "**CPH**"
-4. Click **Install**
-
-### As Development Extension
+This extension is installed as a **dev extension**. Zed has deprecated slash-command
+extensions and no longer accepts them in the public registry — see
+[PUBLISHING.md](PUBLISHING.md) for the policy text.
 
 ```bash
 git clone https://github.com/ashusevim/cph-zed.git
-cd cph-zed
 ```
 
-Then in Zed: **Extensions** → **Install Dev Extension** → Select the `cph-zed` directory
+Then in Zed:
+
+1. Open the Extensions panel (`Cmd+Shift+X` on macOS, `Ctrl+Shift+X` on Linux)
+2. Click **Install Dev Extension**
+3. Select the `cph-zed` directory
+
+Zed compiles it with `cargo build --target wasm32-wasip2`. If your Rust toolchain is
+not rustup-managed, install that target first:
+
+```bash
+rustup target add wasm32-wasip2
+```
 
 ## Quick Start
 
-### Step 1: Install competitive-companion
+### Option A: automatic, via the companion server (recommended)
 
-Install the browser extension:
-- [Chrome Web Store](https://chromewebstore.google.com/detail/competitive-companion/cjnmckjndlpiamhfimnnjmnckgghkjbl)
-- [Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/competitive-companion/)
-
-### Step 2: Install the companion server
+The server writes files straight into your project over HTTP, so there is no sandbox
+in the way.
 
 ```bash
+# 1. Install the companion server
 cargo install cph-server
-```
 
-### Step 3: Start the server
-
-```bash
+# 2. Start it
 cph-server --port 10045 --dir ./problems
 ```
 
-### Step 4: Parse a problem
+Then install [competitive-companion][cc] in your browser, navigate to any problem on
+Codeforces, AtCoder, etc., and click the extension icon. Solution files appear
+automatically.
 
-1. Navigate to any problem on Codeforces, AtCoder, etc.
-2. Click the competitive-companion icon in your browser
-3. Solution files appear automatically in your workspace!
+### Option B: manual, via `/cph-fetch`
+
+Copy the JSON that competitive-companion shows you and run:
+
+```
+/cph-fetch {"name": "A. Two Sum", ...}
+```
+
+Zed's extension sandbox only permits writes to the extension's own work directory, so
+the files are written there and you get a `cp -r` command to move them into your
+project. Run it in your project terminal.
+
+[cc]: https://github.com/jmerle/competitive-companion
 
 ## Slash Commands
 
-Use these slash commands in Zed's AI assistant panel:
-
 | Command | Description |
 |---------|-------------|
-| `/cph-fetch <json>` | Create problem files from pasted JSON |
-| `/cph-run [n]` | Show command to run test case `n` (or all) |
-| `/cph-test` | Show command to test against all cases |
-| `/cph-server` | Info about the companion server |
+| `/cph-fetch [lang] <json>` | Generate solution template, metadata and test files from pasted JSON. `lang` is `cpp` (default), `python`, `rust`, or `java`. |
+| `/cph-run [n]` | Print the command to run test case `n`, or all of them |
+| `/cph-test` | Print the command to test against all cases and count passes/failures |
+| `/cph-server` | Instructions for the companion server |
 
 ## Generated File Structure
 

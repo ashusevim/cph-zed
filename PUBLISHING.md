@@ -1,75 +1,66 @@
 # Publishing CPH for Zed
 
-Follow these steps to publish your extension so everyone can use it!
+**Short version: this extension cannot be published to the public registry. Install it
+as a dev extension instead.**
 
-## Step 1: Create GitHub Repository
+## Why publishing is not possible
 
-```bash
-# Go to https://github.com/new and create "cph-zed" repository
+Zed's [publishing prerequisites][prereq] list which kinds of extensions are accepted:
 
-# Then push your code:
-cd /home/wanony/projects/AI/cph-zed
-git remote add origin https://github.com/YOUR_USERNAME/cph-zed.git
-git branch -M main
-git push -u origin main
-```
+> Extensions can provide: Languages, Debuggers, Themes, Icon Themes, Snippets, MCP Servers
 
-## Step 2: Fork zed-industries/extensions
+and explicitly rule out the category this extension falls into:
 
-1. Go to https://github.com/zed-industries/extensions
-2. Click **Fork** (to your personal account, NOT an organization)
-3. Clone your fork:
-   ```bash
-   git clone https://github.com/YOUR_USERNAME/extensions.git
-   cd extensions
-   git submodule init
-   git submodule update
-   ```
+> ### Agent Server and Slash Command Extensions
+> Agent server and slash command extensions have been deprecated and submissions will
+> no longer be accepted.
 
-## Step 3: Add Your Extension as Submodule
+`cph-zed` provides nothing but slash commands (`cph-fetch`, `cph-run`, `cph-test`,
+`cph-server`). There is no grammar, language server, theme, icon theme, snippet, or MCP
+server. A pull request against `zed-industries/extensions` will be closed unreviewed, per
+the registry's own policy:
 
-```bash
-# From the extensions repo root:
-git submodule add https://github.com/YOUR_USERNAME/cph-zed.git extensions/cph
-git add extensions/cph
-```
+> Why was my PR closed? — It severely violated the publishing prerequisites.
 
-## Step 4: Update extensions.toml
+## Install as a dev extension
 
-Add this to the top-level `extensions.toml`:
+This is a first-class supported workflow and needs no review.
 
-```toml
-[cph]
-submodule = "extensions/cph"
-version = "0.1.0"
-```
+1. Open the extensions pane (`zed: extensions`).
+2. Click **Install Dev Extension**.
+3. Select this directory.
 
-## Step 5: Sort and Submit PR
+Zed compiles it for you with `cargo build --target wasm32-wasip2`. Requirements:
+
+- Rust installed via [rustup](https://www.rust-lang.org/tools/install). If Zed was
+  built against a toolchain that is not rustup-managed, install the target yourself:
+  ```bash
+  rustup target add wasm32-wasip2
+  ```
+- No `wasi-sdk` needed — that is only for extensions that ship Tree-sitter grammars.
+
+To rebuild after a code change, reopen the extensions pane and reinstall, or run:
 
 ```bash
-pnpm sort-extensions
-git add .
-git commit -m "Add CPH (Competitive Programming Helper) extension"
-git push origin main
+cargo build --target wasm32-wasip2
 ```
 
-Then go to GitHub and create a Pull Request to `zed-industries/extensions`.
-
-## Optional: Publish Server to crates.io
+Debug output from the extension goes to Zed's log (`zed: open log`). For live
+`println!` output, launch Zed in the foreground:
 
 ```bash
-cd /home/wanony/projects/AI/cph-server
-
-# Login to crates.io
-cargo login
-
-# Publish
-cargo publish
+zeditor --foreground
 ```
 
-## Requirements Checklist
+## Optional: install the companion server
 
-- [x] MIT License included
-- [x] extension.toml with required fields
-- [x] Cargo.toml properly configured
-- [x] README.md with documentation
+The slash commands require pasting JSON by hand. For automatic fetching, run the
+separate companion server, which receives problems over HTTP and writes files
+directly into your project — no sandbox involved.
+
+```bash
+cargo install cph-server
+cph-server --port 10045 --dir ./problems
+```
+
+[prereq]: https://zed.dev/docs/extensions/publishing/prerequisites

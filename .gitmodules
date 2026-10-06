@@ -1,3 +1,0 @@
-[submodule "extensions/cph"]
-	path = extensions/cph
-	url = https://github.com/ashusevim/cph-zed.git
